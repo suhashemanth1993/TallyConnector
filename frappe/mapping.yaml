@@ -1,0 +1,227 @@
+# Maps each Tally entity (see models/registry.py) to a target Frappe DocType
+# and a field_map of {tally_field: frappe_field}. DocType names here are
+# placeholders — rename them once your real Frappe DocTypes exist. Keys on
+# the left of field_map are the snake_case attribute names on TallyMaster /
+# TallyVoucher (models/masters.py, models/vouchers.py); values are the
+# field names on the target Frappe DocType.
+
+company:
+  frappe_doctype: "Tally Company"
+  field_map:
+    guid: tally_guid
+    name: title
+    alter_id: tally_alter_id
+    state_name: state
+    gst_registration_number: gstin
+
+group:
+  frappe_doctype: "Tally Group"
+  field_map:
+    guid: tally_guid
+    name: title
+    parent: parent_group
+    alter_id: tally_alter_id
+
+ledger:
+  frappe_doctype: "Tally Ledger"
+  field_map:
+    guid: tally_guid
+    name: title
+    parent: ledger_group
+    alter_id: tally_alter_id
+    opening_balance: opening_balance
+    gstin: gstin
+    ledger_contact: contact_person
+
+voucher_type:
+  frappe_doctype: "Tally Voucher Type"
+  field_map:
+    guid: tally_guid
+    name: title
+    parent: parent_voucher_type
+    alter_id: tally_alter_id
+
+stock_group:
+  frappe_doctype: "Tally Stock Group"
+  field_map:
+    guid: tally_guid
+    name: title
+    parent: parent_stock_group
+    alter_id: tally_alter_id
+
+stock_category:
+  frappe_doctype: "Tally Stock Category"
+  field_map:
+    guid: tally_guid
+    name: title
+    parent: parent_stock_category
+    alter_id: tally_alter_id
+
+stock_item:
+  frappe_doctype: "Tally Stock Item"
+  field_map:
+    guid: tally_guid
+    name: title
+    parent: stock_group
+    alter_id: tally_alter_id
+    base_units: base_unit
+    opening_balance: opening_qty
+    opening_rate: opening_rate
+
+unit:
+  frappe_doctype: "Tally Unit"
+  field_map:
+    guid: tally_guid
+    name: title
+    alter_id: tally_alter_id
+    symbol: symbol
+    decimal_places: decimal_places
+
+godown:
+  frappe_doctype: "Tally Godown"
+  field_map:
+    guid: tally_guid
+    name: title
+    parent: parent_godown
+    alter_id: tally_alter_id
+
+cost_centre:
+  frappe_doctype: "Tally Cost Centre"
+  field_map:
+    guid: tally_guid
+    name: title
+    parent: parent_cost_centre
+    alter_id: tally_alter_id
+    category: cost_category
+
+cost_category:
+  frappe_doctype: "Tally Cost Category"
+  field_map:
+    guid: tally_guid
+    name: title
+    alter_id: tally_alter_id
+
+currency:
+  frappe_doctype: "Tally Currency"
+  field_map:
+    guid: tally_guid
+    name: title
+    alter_id: tally_alter_id
+    decimal_places: decimal_places
+
+gst_master:
+  frappe_doctype: "Tally GST Master"
+  field_map:
+    guid: tally_guid
+    name: title
+    alter_id: tally_alter_id
+    hsn_code: hsn_code
+    gst_rate: gst_rate
+
+state:
+  frappe_doctype: "Tally State"
+  field_map:
+    guid: tally_guid
+    name: title
+    alter_id: tally_alter_id
+
+sales_voucher:
+  frappe_doctype: "Tally Sales Voucher"
+  field_map:
+    guid: tally_guid
+    voucher_number: voucher_number
+    date: posting_date
+    party_ledger_name: party
+    narration: narration
+    alter_id: tally_alter_id
+    ledger_entries: ledger_entries
+    inventory_entries: items
+
+purchase_voucher:
+  frappe_doctype: "Tally Purchase Voucher"
+  field_map:
+    guid: tally_guid
+    voucher_number: voucher_number
+    date: posting_date
+    party_ledger_name: party
+    narration: narration
+    alter_id: tally_alter_id
+    ledger_entries: ledger_entries
+    inventory_entries: items
+
+receipt_voucher:
+  frappe_doctype: "Tally Receipt Voucher"
+  field_map:
+    guid: tally_guid
+    voucher_number: voucher_number
+    date: posting_date
+    party_ledger_name: party
+    narration: narration
+    alter_id: tally_alter_id
+    ledger_entries: ledger_entries
+
+payment_voucher:
+  frappe_doctype: "Tally Payment Voucher"
+  field_map:
+    guid: tally_guid
+    voucher_number: voucher_number
+    date: posting_date
+    party_ledger_name: party
+    narration: narration
+    alter_id: tally_alter_id
+    ledger_entries: ledger_entries
+
+contra_voucher:
+  frappe_doctype: "Tally Contra Voucher"
+  field_map:
+    guid: tally_guid
+    voucher_number: voucher_number
+    date: posting_date
+    narration: narration
+    alter_id: tally_alter_id
+    ledger_entries: ledger_entries
+
+journal_voucher:
+  frappe_doctype: "Tally Journal Voucher"
+  field_map:
+    guid: tally_guid
+    voucher_number: voucher_number
+    date: posting_date
+    narration: narration
+    alter_id: tally_alter_id
+    ledger_entries: ledger_entries
+
+debit_note_voucher:
+  frappe_doctype: "Tally Debit Note Voucher"
+  field_map:
+    guid: tally_guid
+    voucher_number: voucher_number
+    date: posting_date
+    party_ledger_name: party
+    narration: narration
+    alter_id: tally_alter_id
+    ledger_entries: ledger_entries
+    inventory_entries: items
+
+credit_note_voucher:
+  frappe_doctype: "Tally Credit Note Voucher"
+  field_map:
+    guid: tally_guid
+    voucher_number: voucher_number
+    date: posting_date
+    party_ledger_name: party
+    narration: narration
+    alter_id: tally_alter_id
+    ledger_entries: ledger_entries
+    inventory_entries: items
+
+stock_journal_voucher:
+  frappe_doctype: "Tally Stock Journal Voucher"
+  field_map:
+    guid: tally_guid
+    voucher_number: voucher_number
+    date: posting_date
+    narration: narration
+    alter_id: tally_alter_id
+    ledger_entries: ledger_entries
+    inventory_entries: items

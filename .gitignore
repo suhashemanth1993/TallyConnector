@@ -1,0 +1,15 @@
+.env
+.venv/
+.DS_Store
+__pycache__/
+*.pyc
+.pytest_cache/
+.state/*.db
+.state/*.db-*
+logs/*.log*
+!logs/.gitkeep
+build/
+dist/
+*.spec.bak
+.mypy_cache/
+.ruff_cache/

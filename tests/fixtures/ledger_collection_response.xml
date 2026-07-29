@@ -1,0 +1,24 @@
+<ENVELOPE>
+    <LEDGER NAME="Sales Account">
+        <NAME>Sales Account</NAME>
+        <PARENT>Sales Accounts</PARENT>
+        <GUID>lg-0001-0001-0001-000000000001</GUID>
+        <ALTERID>201</ALTERID>
+        <OPENINGBALANCE>0</OPENINGBALANCE>
+        <GSTIN>29ABCDE1234F1Z5</GSTIN>
+        <LEDGERCONTACT>Accounts Team</LEDGERCONTACT>
+    </LEDGER>
+    <LEDGER NAME="Cash">
+        <NAME>Cash</NAME>
+        <PARENT>Cash-in-Hand</PARENT>
+        <GUID>lg-0002-0002-0002-000000000002</GUID>
+        <ALTERID>202</ALTERID>
+    </LEDGER>
+    <LEDGER NAME="M/s Sharma &amp; Sons">
+        <NAME>M/s Sharma &amp; Sons</NAME>
+        <PARENT>Sundry Debtors</PARENT>
+        <GUID>lg-0003-0003-0003-000000000003</GUID>
+        <ALTERID>203</ALTERID>
+        <OPENINGBALANCE>15000.50</OPENINGBALANCE>
+    </LEDGER>
+</ENVELOPE>
