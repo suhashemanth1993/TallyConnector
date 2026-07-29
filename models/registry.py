@@ -152,6 +152,23 @@ _VOUCHERS: list[EntitySpec] = [
         has_inventory=True,
         depends_on=("voucher_type", "stock_item", "godown"),
     ),
+    # Order vouchers: unverified against real Tally data (same caveat as
+    # gst_master/state) — "Purchase Order"/"Sales Order" is the standard
+    # Tally VoucherTypeName, but order vouchers behave differently from
+    # accounting vouchers (may have partial/absent ledger postings until
+    # invoiced) and haven't been confirmed to export the same shape.
+    _voucher(
+        "purchase_order_voucher",
+        "Purchase Order",
+        has_inventory=True,
+        depends_on=("ledger", "voucher_type", "stock_item", "godown"),
+    ),
+    _voucher(
+        "sales_order_voucher",
+        "Sales Order",
+        has_inventory=True,
+        depends_on=("ledger", "voucher_type", "stock_item", "godown"),
+    ),
 ]
 
 REGISTRY: dict[str, EntitySpec] = {spec.name: spec for spec in [*_MASTERS, *_VOUCHERS]}

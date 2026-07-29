@@ -225,3 +225,27 @@ stock_journal_voucher:
     alter_id: tally_alter_id
     ledger_entries: ledger_entries
     inventory_entries: items
+
+purchase_order_voucher:
+  frappe_doctype: "Tally Purchase Order"
+  field_map:
+    guid: tally_guid
+    voucher_number: voucher_number
+    date: posting_date
+    party_ledger_name: party
+    narration: narration
+    alter_id: tally_alter_id
+    ledger_entries: ledger_entries
+    inventory_entries: items
+
+sales_order_voucher:
+  frappe_doctype: "Tally Sales Order"
+  field_map:
+    guid: tally_guid
+    voucher_number: voucher_number
+    date: posting_date
+    party_ledger_name: party
+    narration: narration
+    alter_id: tally_alter_id
+    ledger_entries: ledger_entries
+    inventory_entries: items

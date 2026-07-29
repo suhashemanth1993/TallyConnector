@@ -69,12 +69,12 @@ def check_pydantic_models():
 def check_registry():
     from models.registry import REGISTRY, resolve_sync_order
 
-    if len(REGISTRY) != 23:
-        return FAIL, f"expected 23 entities, found {len(REGISTRY)}"
+    if len(REGISTRY) != 25:
+        return FAIL, f"expected 25 entities, found {len(REGISTRY)}"
     order = [s.name for s in resolve_sync_order()]
     if not (order.index("company") < order.index("ledger") < order.index("sales_voucher")):
         return FAIL, f"sync order looks wrong: {order}"
-    return PASS, f"23 entities, sync order OK ({order[0]} -> ... -> {order[-1]})"
+    return PASS, f"25 entities, sync order OK ({order[0]} -> ... -> {order[-1]})"
 
 
 def check_frappe_mapping():
