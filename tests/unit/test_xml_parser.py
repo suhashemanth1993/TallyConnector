@@ -35,10 +35,10 @@ def test_parses_ledger_master_with_special_chars_and_missing_fields(fixture_load
     assert len(records) == 3
 
     full, minimal, special = records
-    assert full["gstin"] == "29ABCDE1234F1Z5"
+    assert full["party_gstin"] == "29ABCDE1234F1Z5"
     assert full["opening_balance"] == "0"
 
-    assert "gstin" not in minimal
+    assert "party_gstin" not in minimal
     assert "opening_balance" not in minimal
 
     assert special["name"] == "M/s Sharma & Sons"

@@ -69,3 +69,11 @@ mypy .
 `tally_object_type` values (`GSTClassification`, `State`) are best-effort
 guesses made without a live TallyPrime instance to confirm the exact TDL
 object names against. Verify and adjust before relying on those two.
+
+`ledger.LedgerContact` is similarly unverified — confirmed against real
+Tally data that it doesn't error, but haven't yet confirmed it's the right
+field name for a ledger's actual contact person (it may be blank in the
+test data rather than wrong). `ledger.PartyGSTIN` *was* wrong (`GSTIN`
+originally) and has been fixed and confirmed against real data — Tally
+distinguishes a Company's own `GSTRegistrationNumber` from a Ledger/party's
+`PartyGSTIN`.

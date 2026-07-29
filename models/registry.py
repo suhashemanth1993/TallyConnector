@@ -80,7 +80,10 @@ _MASTERS: list[EntitySpec] = [
     _master(
         "ledger",
         "Ledger",
-        ["Name", "Parent", "GUID", "AlterID", "OpeningBalance", "GSTIN", "LedgerContact"],
+        # PartyGSTIN, not GSTIN: confirmed against real TallyPrime XML —
+        # ledger/party GST numbers use a different native field than a
+        # Company's own GSTRegistrationNumber.
+        ["Name", "Parent", "GUID", "AlterID", "OpeningBalance", "PartyGSTIN", "LedgerContact"],
         depends_on=("group",),
     ),
     _master("voucher_type", "VoucherType", ["Name", "Parent", "GUID", "AlterID"]),

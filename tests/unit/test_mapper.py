@@ -17,7 +17,7 @@ def test_maps_ledger_records_to_master_model(fixture_loader):
     assert all(isinstance(m, TallyMaster) for m in models)
     assert models[0].name == "Sales Account"
     assert models[0].alter_id == 201
-    assert models[0].gstin == "29ABCDE1234F1Z5"  # extra field, via extra="allow"
+    assert models[0].party_gstin == "29ABCDE1234F1Z5"  # extra field, via extra="allow"
 
 
 def test_maps_company_without_guid_using_name_as_natural_key(fixture_loader):
