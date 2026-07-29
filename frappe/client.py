@@ -32,6 +32,10 @@ class FrappeClient:
             base_wait_seconds=self._settings.retry_backoff_base_seconds,
         )
 
+    @property
+    def base_url(self) -> str:
+        return self._settings.frappe_base_url
+
     def _headers(self) -> dict[str, str]:
         token = f"{self._settings.frappe_api_key}:{self._settings.frappe_api_secret}"
         return {

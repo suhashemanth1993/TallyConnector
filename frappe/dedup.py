@@ -23,7 +23,9 @@ def find_existing(
     identity (see EntitySpec.natural_key_field — usually "guid", but e.g.
     "name" for Company). Its mapped Frappe field name is looked up from
     `mapping_entry.field_map`, falling back to the field name itself."""
-    cached = store.get_cached_frappe_name(mapping_entry.entity_name, natural_key_value)
+    cached = store.get_cached_frappe_name(
+        mapping_entry.entity_name, natural_key_value, client.base_url
+    )
     if cached:
         return cached
 
@@ -38,6 +40,7 @@ def find_existing(
     store.upsert_cache(
         entity_name=mapping_entry.entity_name,
         tally_guid=natural_key_value,
+        frappe_base_url=client.base_url,
         frappe_name=frappe_name,
         frappe_doctype=mapping_entry.frappe_doctype,
         content_hash="",

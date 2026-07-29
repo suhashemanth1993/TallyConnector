@@ -239,7 +239,7 @@ class SyncEngine:
         existing_name = find_existing(
             self._store, self._frappe, mapping_entry, spec.natural_key_field, natural_key
         )
-        cache_entry = self._store.get_cache_entry(spec.name, natural_key)
+        cache_entry = self._store.get_cache_entry(spec.name, natural_key, self._frappe.base_url)
 
         if existing_name and cache_entry and cache_entry["content_hash"] == content_hash:
             result.unchanged += 1
@@ -257,6 +257,7 @@ class SyncEngine:
         self._store.upsert_cache(
             entity_name=spec.name,
             tally_guid=natural_key,
+            frappe_base_url=self._frappe.base_url,
             frappe_name=frappe_name,
             frappe_doctype=mapping_entry.frappe_doctype,
             content_hash=content_hash,

@@ -18,6 +18,17 @@
   disabled, or lacks permission on the target DocTypes — regenerate the
   key pair in Frappe (User > API Access).
 
+## Switched `FRAPPE_BASE_URL` (e.g. dev -> prod) and records show as "unchanged" but aren't there
+
+- Fixed as of the dedup-cache-scoping change in `sync/state_store.py` — the
+  local `STATE_DB_PATH` cache is now scoped per `FRAPPE_BASE_URL`, so
+  switching targets no longer causes records already pushed to one Frappe
+  site to be wrongly reported as already existing on another. If you're on
+  an older build: delete/rename the SQLite file at `STATE_DB_PATH` before
+  switching targets, or run `--full-sync` again after switching (the first
+  post-fix run rebuilds the cache from scratch, which is expected and safe
+  — it just costs one extra GET check per record).
+
 ## Records aren't appearing in Frappe
 
 - Check `frappe/mapping.yaml` — if an entity has no mapping entry, the

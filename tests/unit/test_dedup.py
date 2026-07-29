@@ -22,6 +22,7 @@ def test_find_existing_uses_cache_before_network(tmp_path, requests_mock):
     store.upsert_cache(
         entity_name="ledger",
         tally_guid="g-1",
+        frappe_base_url="https://example.frappe.cloud",
         frappe_name="LEDG-0001",
         frappe_doctype="Tally Ledger",
         content_hash="x",
@@ -45,7 +46,9 @@ def test_find_existing_falls_back_to_frappe_and_populates_cache(tmp_path, reques
 
     result = find_existing(store, client, mapping["ledger"], "guid", "g-9")
     assert result == "LEDG-0009"
-    assert store.get_cached_frappe_name("ledger", "g-9") == "LEDG-0009"
+    assert (
+        store.get_cached_frappe_name("ledger", "g-9", "https://example.frappe.cloud") == "LEDG-0009"
+    )
 
 
 def test_find_existing_returns_none_when_not_found(tmp_path, requests_mock):
@@ -55,6 +58,29 @@ def test_find_existing_returns_none_when_not_found(tmp_path, requests_mock):
     mapping = load_mapping("frappe/mapping.yaml")
 
     assert find_existing(store, client, mapping["ledger"], "guid", "g-missing") is None
+
+
+def test_find_existing_does_not_cross_contaminate_between_frappe_targets(tmp_path, requests_mock):
+    """Regression test for the real bug: switching FRAPPE_BASE_URL (e.g. dev
+    -> prod) with the same state DB must not report records as already
+    existing on the new target just because they're cached from the old one."""
+    store = StateStore(str(tmp_path / "state.db"))
+    mapping = load_mapping("frappe/mapping.yaml")
+
+    dev_client = FrappeClient(settings=_settings(frappe_base_url="https://dev.example.com"))
+    store.upsert_cache(
+        entity_name="ledger",
+        tally_guid="g-1",
+        frappe_base_url="https://dev.example.com",
+        frappe_name="LEDG-0001",
+        frappe_doctype="Tally Ledger",
+        content_hash="x",
+    )
+    assert find_existing(store, dev_client, mapping["ledger"], "guid", "g-1") == "LEDG-0001"
+
+    requests_mock.get("https://prod.example.com/api/resource/Tally Ledger", json={"data": []})
+    prod_client = FrappeClient(settings=_settings(frappe_base_url="https://prod.example.com"))
+    assert find_existing(store, prod_client, mapping["ledger"], "guid", "g-1") is None
 
 
 def test_find_existing_dedupes_on_name_for_company_style_entities(tmp_path, requests_mock):

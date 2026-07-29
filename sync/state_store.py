@@ -40,11 +40,12 @@ CREATE TABLE IF NOT EXISTS retry_queue (
 CREATE TABLE IF NOT EXISTS sync_cache (
     entity_name TEXT NOT NULL,
     tally_guid TEXT NOT NULL,
+    frappe_base_url TEXT NOT NULL,
     frappe_name TEXT NOT NULL,
     frappe_doctype TEXT NOT NULL,
     content_hash TEXT,
     last_pushed_at TEXT,
-    PRIMARY KEY (entity_name, tally_guid)
+    PRIMARY KEY (entity_name, tally_guid, frappe_base_url)
 );
 """
 
@@ -59,8 +60,26 @@ class StateStore:
         self._conn = sqlite3.connect(db_path, check_same_thread=False)
         self._conn.row_factory = sqlite3.Row
         self._conn.execute("PRAGMA journal_mode=WAL")
+        self._migrate_sync_cache_schema()
         self._conn.executescript(_SCHEMA)
         self._conn.commit()
+
+    def _migrate_sync_cache_schema(self) -> None:
+        """sync_cache used to be keyed on (entity_name, tally_guid) only, which
+        silently cross-contaminates dedup results if the same state DB is ever
+        pointed at more than one Frappe target (e.g. switching FRAPPE_BASE_URL
+        from a dev site to prod) — records already pushed to one site get
+        wrongly reported as "already exists" on the other. Older DBs are
+        missing the frappe_base_url column; the cache is disposable (just a
+        speed-up over a live GET check), so we drop and let it rebuild rather
+        than attempt a data migration.
+        """
+        cols = {
+            row["name"] for row in self._conn.execute("PRAGMA table_info(sync_cache)").fetchall()
+        }
+        if cols and "frappe_base_url" not in cols:
+            self._conn.execute("DROP TABLE sync_cache")
+            self._conn.commit()
 
     def close(self) -> None:
         self._conn.close()
@@ -162,20 +181,26 @@ class StateStore:
 
     # -- sync_cache (dedup) -----------------------------------------------
 
-    def get_cached_frappe_name(self, entity_name: str, tally_guid: str) -> str | None:
+    def get_cached_frappe_name(
+        self, entity_name: str, tally_guid: str, frappe_base_url: str
+    ) -> str | None:
         with self._cursor() as cur:
             cur.execute(
-                "SELECT frappe_name FROM sync_cache WHERE entity_name = ? AND tally_guid = ?",
-                (entity_name, tally_guid),
+                "SELECT frappe_name FROM sync_cache "
+                "WHERE entity_name = ? AND tally_guid = ? AND frappe_base_url = ?",
+                (entity_name, tally_guid, frappe_base_url),
             )
             row = cur.fetchone()
             return row["frappe_name"] if row else None
 
-    def get_cache_entry(self, entity_name: str, tally_guid: str) -> sqlite3.Row | None:
+    def get_cache_entry(
+        self, entity_name: str, tally_guid: str, frappe_base_url: str
+    ) -> sqlite3.Row | None:
         with self._cursor() as cur:
             cur.execute(
-                "SELECT * FROM sync_cache WHERE entity_name = ? AND tally_guid = ?",
-                (entity_name, tally_guid),
+                "SELECT * FROM sync_cache "
+                "WHERE entity_name = ? AND tally_guid = ? AND frappe_base_url = ?",
+                (entity_name, tally_guid, frappe_base_url),
             )
             return cur.fetchone()
 
@@ -184,6 +209,7 @@ class StateStore:
         *,
         entity_name: str,
         tally_guid: str,
+        frappe_base_url: str,
         frappe_name: str,
         frappe_doctype: str,
         content_hash: str,
@@ -192,14 +218,22 @@ class StateStore:
             cur.execute(
                 """
                 INSERT INTO sync_cache
-                    (entity_name, tally_guid, frappe_name, frappe_doctype,
-                     content_hash, last_pushed_at)
-                VALUES (?, ?, ?, ?, ?, ?)
-                ON CONFLICT(entity_name, tally_guid) DO UPDATE SET
+                    (entity_name, tally_guid, frappe_base_url, frappe_name,
+                     frappe_doctype, content_hash, last_pushed_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(entity_name, tally_guid, frappe_base_url) DO UPDATE SET
                     frappe_name=excluded.frappe_name,
                     frappe_doctype=excluded.frappe_doctype,
                     content_hash=excluded.content_hash,
                     last_pushed_at=excluded.last_pushed_at
                 """,
-                (entity_name, tally_guid, frappe_name, frappe_doctype, content_hash, _now()),
+                (
+                    entity_name,
+                    tally_guid,
+                    frappe_base_url,
+                    frappe_name,
+                    frappe_doctype,
+                    content_hash,
+                    _now(),
+                ),
             )
