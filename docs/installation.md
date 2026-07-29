@@ -47,9 +47,39 @@ Once you have the `.exe`, place a `.env` file (see `.env.example`) and
 tally-connector.exe --health-check
 ```
 
-## Auto-start (not yet built)
+## Auto-start via Task Scheduler
 
-Running the `.exe` as a Windows Service / registering it for auto-start on
-login, and a graphical configuration wizard, are listed in the PRD as
-follow-up work — today the connector is a console application configured
-via `.env`.
+`app.py` with no arguments runs forever (health check + incremental sync +
+retry drain, repeating every `SYNC_INTERVAL_MINUTES`), so auto-start means
+"launch this at logon and keep it running," not a one-shot scheduled job.
+
+`run_service.bat` in the repo root does this: it `cd`s to its own folder
+(works regardless of where you cloned the repo), activates `.venv`, and
+runs `python app.py`.
+
+Register it (adjust the path to match where you cloned the repo):
+```cmd
+schtasks /create /tn "TallyConnectorSync" /tr "C:\path\to\TallyConnector\run_service.bat" /sc onlogon /rl highest /f
+```
+This starts the sync loop automatically whenever you log in. Check it's
+running via Task Manager (look for `python.exe`) or by watching
+`logs\app.log` update.
+
+**Manage it:**
+```cmd
+schtasks /query /tn "TallyConnectorSync"     REM check status
+schtasks /end /tn "TallyConnectorSync"       REM stop it
+schtasks /delete /tn "TallyConnectorSync" /f REM remove the task entirely
+```
+
+**Two things the plain command above does *not* give you** (need the Task
+Scheduler GUI, since they involve settings `schtasks create` can't set and,
+for the first one, a password I can't handle for you in a chat):
+- **Running without anyone logged in** — open Task Scheduler → find the
+  task → Properties → General tab → "Run whether user is logged on or
+  not" (enter your Windows password when prompted).
+- **Auto-restart if the process crashes** — Properties → Settings tab →
+  "If the task fails, restart every: 1 minute" (pick an attempt limit).
+
+A graphical configuration wizard and an installer are still not built —
+today this is `.env` + Task Scheduler.
