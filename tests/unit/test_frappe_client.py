@@ -66,6 +66,20 @@ def test_get_raises_typed_error_on_malformed_base_url():
         client.get("Tally Ledger", {"tally_guid": "g-1"})
 
 
+def test_non_json_response_raises_typed_error_not_raw_traceback(requests_mock):
+    """Reproduces a real failure: FRAPPE_BASE_URL pointing at something that
+    returns HTTP 200 with an HTML page (e.g. a login page) instead of JSON."""
+    requests_mock.get(
+        "https://example.frappe.cloud/api/resource/Tally Ledger",
+        status_code=200,
+        headers={"Content-Type": "text/html"},
+        text="<html><body>Please log in</body></html>",
+    )
+    client = FrappeClient(settings=_settings())
+    with pytest.raises(FrappeAPIError, match="FRAPPE_BASE_URL"):
+        client.get("Tally Ledger", {"tally_guid": "g-1"})
+
+
 def test_server_error_is_retried_then_raises_frappe_api_error(requests_mock):
     requests_mock.get(
         "https://example.frappe.cloud/api/resource/Tally Ledger", status_code=500, text="oops"

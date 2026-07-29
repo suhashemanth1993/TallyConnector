@@ -78,7 +78,19 @@ class FrappeClient:
 
         if not response.content:
             return {}
-        return response.json()
+        try:
+            return response.json()
+        except ValueError as exc:
+            # HTTP succeeded but the body isn't JSON — almost always a wrong
+            # FRAPPE_BASE_URL (pointing at a login/landing page, not the API)
+            # rather than a transient issue, so don't retry it forever.
+            content_type = response.headers.get("Content-Type", "unknown")
+            snippet = response.text[:200].replace("\n", " ")
+            raise FrappeAPIError(
+                f"Frappe response wasn't valid JSON (Content-Type: {content_type}): {snippet!r}. "
+                f"Check FRAPPE_BASE_URL ({self._settings.frappe_base_url!r}) points at your "
+                "actual Frappe site's API, not a login page or the wrong host."
+            ) from exc
 
     def get(
         self, doctype: str, filters: dict[str, Any], fields: list[str] | None = None
