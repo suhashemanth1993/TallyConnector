@@ -5,11 +5,20 @@ real TallyPrime output against the field names assumed in models/registry.py.
     python dump_xml.py ledger
     python dump_xml.py sales_voucher --from 2024-01-01 --to 2024-01-31
     python dump_xml.py company --out company_raw.xml
+
+Tally only ever returns fields you explicitly FETCH — if the field name
+assumed in models/registry.py is wrong, dump_xml.py alone won't reveal the
+right one, because it only asks for fields we already know about. Use
+--extra-fetch to test candidate field names (including nested .LIST names)
+without editing the registry first:
+
+    python dump_xml.py company --extra-fetch GSTREGDETAILS.LIST,CMPGSTIN
 """
 
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import sys
 from datetime import date
 from pathlib import Path
@@ -26,9 +35,17 @@ def main() -> int:
     parser.add_argument("--from", dest="date_from", help="YYYY-MM-DD, voucher entities only")
     parser.add_argument("--to", dest="date_to", help="YYYY-MM-DD, voucher entities only")
     parser.add_argument("--out", help="write response XML to this file instead of stdout")
+    parser.add_argument(
+        "--extra-fetch",
+        help="comma-separated extra FETCH field names to test, e.g. "
+        "GSTREGDETAILS.LIST,CMPGSTIN (see module docstring)",
+    )
     args = parser.parse_args()
 
     spec = get_entity(args.entity)
+    if args.extra_fetch:
+        extra_fields = [f.strip() for f in args.extra_fetch.split(",") if f.strip()]
+        spec = dataclasses.replace(spec, fetch_fields=[*spec.fetch_fields, *extra_fields])
     settings = get_settings()
     date_from = date.fromisoformat(args.date_from) if args.date_from else None
     date_to = date.fromisoformat(args.date_to) if args.date_to else None
