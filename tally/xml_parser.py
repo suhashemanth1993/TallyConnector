@@ -59,7 +59,13 @@ def _extract_fields(row: etree._Element, fields: list[str]) -> dict[str, Any]:
 def _extract_entry_list(
     row: etree._Element, list_tag: str, fields: list[str]
 ) -> list[dict[str, Any]]:
-    return [_extract_fields(entry, fields) for entry in row.findall(list_tag)]
+    # Tally sometimes emits an empty list-tag occurrence (e.g. a service-only
+    # purchase voucher can still carry a blank ALLINVENTORYENTRIES.LIST) —
+    # that yields an entry dict with none of `fields` populated, which isn't
+    # a real line item and would fail model validation (missing required
+    # fields) if kept.
+    entries = [_extract_fields(entry, fields) for entry in row.findall(list_tag)]
+    return [entry for entry in entries if entry]
 
 
 def parse_collection_response(xml_bytes: bytes, spec: EntitySpec) -> list[dict[str, Any]]:

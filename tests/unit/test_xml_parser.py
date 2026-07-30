@@ -65,6 +65,32 @@ def test_parses_sales_voucher_with_nested_entries(fixture_loader):
     assert second["inventory_entries"] == []
 
 
+def test_empty_inventory_entry_list_tag_is_filtered_not_kept_as_blank_row():
+    """A service-only purchase voucher can still carry a blank
+    ALLINVENTORYENTRIES.LIST tag from Tally — real sync failure showed this
+    produces a `{}` entry that then fails model validation if not filtered."""
+    xml = b"""<ENVELOPE>
+        <VOUCHER>
+            <DATE>20260722</DATE>
+            <VOUCHERNUMBER>6293</VOUCHERNUMBER>
+            <GUID>vch-empty-inv-0001</GUID>
+            <PARTYLEDGERNAME>Office Express</PARTYLEDGERNAME>
+            <VOUCHERTYPENAME>Purchase</VOUCHERTYPENAME>
+            <ALLLEDGERENTRIES.LIST>
+                <LEDGERNAME>Office Express</LEDGERNAME>
+                <AMOUNT>6843.00</AMOUNT>
+                <ISDEEMEDPOSITIVE>No</ISDEEMEDPOSITIVE>
+            </ALLLEDGERENTRIES.LIST>
+            <ALLINVENTORYENTRIES.LIST>
+            </ALLINVENTORYENTRIES.LIST>
+        </VOUCHER>
+    </ENVELOPE>"""
+    spec = get_entity("purchase_voucher")
+    records = parse_collection_response(xml, spec)
+    assert len(records) == 1
+    assert records[0]["inventory_entries"] == []
+
+
 def test_empty_collection_returns_empty_list(fixture_loader):
     spec = get_entity("ledger")
     records = parse_collection_response(fixture_loader("empty_collection_response.xml"), spec)

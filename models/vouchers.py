@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 from datetime import date, datetime
 from decimal import Decimal, InvalidOperation
 
@@ -11,6 +12,13 @@ from models.base import TallyBaseModel
 
 _TALLY_DATE_FMT = "%Y%m%d"
 _TRUE_STRINGS = {"yes", "true", "1"}
+
+# Tally's ActualQty/Rate come back as compound strings, not plain numbers —
+# e.g. "500 kgs", "0.07/no", or "10000 no =  2 Bin" (an alternate-unit
+# conversion). We only want the leading numeric value; the unit/conversion
+# suffix is discarded (not currently modeled — a future enhancement if the
+# alternate-unit quantity itself is ever needed).
+_LEADING_NUMBER = re.compile(r"^\s*(-?[\d,]+(?:\.\d+)?)")
 
 
 def _coerce_tally_date(value: object) -> object:
@@ -27,11 +35,14 @@ def _coerce_tally_bool(value: object) -> object:
 
 def _coerce_tally_decimal(value: object) -> object:
     if isinstance(value, str):
-        cleaned = value.replace(",", "").strip()
+        cleaned = value.strip()
         if not cleaned:
             return None
+        match = _LEADING_NUMBER.match(cleaned)
+        if not match:
+            return value
         try:
-            return Decimal(cleaned)
+            return Decimal(match.group(1).replace(",", ""))
         except InvalidOperation:
             return value
     return value
