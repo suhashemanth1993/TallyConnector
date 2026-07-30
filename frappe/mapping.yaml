@@ -30,6 +30,7 @@ ledger:
     parent: ledger_group
     alter_id: tally_alter_id
     opening_balance: opening_balance
+    closing_balance: closing_balance
     party_gstin: gstin
     ledger_contact: contact_person
 
